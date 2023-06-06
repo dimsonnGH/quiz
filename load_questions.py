@@ -9,7 +9,7 @@ def read_files(file_paths):
     return text
 
 
-def load_questions(path_to_questions_folder):
+def example_load_questions(path_to_questions_folder):
     file_paths = [
         os.path.join(path_to_questions_folder, file_name)
         for file_name in os.listdir(path_to_questions_folder)
@@ -28,8 +28,7 @@ def load_questions(path_to_questions_folder):
     return questions
 
 
-def main():
-    # [Раздатка]
+def load_questions():
     file_path = r'C:\Python projects\dvmn\quiz\quiz-questions\aaron16.txt'
     with open(file_path, 'r', encoding='KOI8-R') as questions_file:
         file_contents = questions_file.read()
@@ -39,10 +38,10 @@ def main():
     answer_list = [' '.join(paragraph.split('\n')[1:]) for paragraph in paragraphs if paragraph.startswith('Ответ')]
     questions = dict(zip(question_list, answer_list))
 
-    a = 1
+    return questions
 
 
-if __name__ == '__main__':
+"""if __name__ == '__main__':
     main()
-    '''path_to_questions_folder = r'C:\Python projects\dvmn\quiz\test'
-    load_questions(path_to_questions_folder)'''
+    path_to_questions_folder = r'C:\Python projects\dvmn\quiz\test'
+    load_questions(path_to_questions_folder)"""
