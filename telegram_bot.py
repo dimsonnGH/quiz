@@ -1,7 +1,7 @@
 import logging
 import os
 from dotenv import load_dotenv
-from telegram import Update, ForceReply
+from telegram import Update, ForceReply, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 logger = logging.getLogger(__name__)
@@ -19,8 +19,10 @@ def start(update: Update, context: CallbackContext) -> None:
         fr'Hi {user.mention_markdown_v2()}\!',
         reply_markup=ForceReply(selective=True),
     )'''
-    update.message.reply_text('Здравствуйте!')
-
+    custom_keyboard = [['Новый вопрос', 'Сдаться'],
+                       ['Мой счет', ]]
+    reply_markup = ReplyKeyboardMarkup(custom_keyboard)
+    update.message.reply_text('Здравствуйте!', reply_markup=reply_markup)
 
 def main() -> None:
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
