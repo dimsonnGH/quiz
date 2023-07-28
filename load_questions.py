@@ -28,7 +28,7 @@ def example_load_questions(path_to_questions_folder):
     return questions
 
 
-def load_questions():
+def old_load_questions():
     file_path = r'C:\Python projects\dvmn\quiz\quiz-questions\aaron16.txt'
     with open(file_path, 'r', encoding='KOI8-R') as questions_file:
         file_contents = questions_file.read()
@@ -36,7 +36,38 @@ def load_questions():
     paragraphs = file_contents.split('\n\n')
     question_list = [' '.join(paragraph.split('\n')[1:]) for paragraph in paragraphs if paragraph.startswith('Вопрос')]
     answer_list = [' '.join(paragraph.split('\n')[1:]) for paragraph in paragraphs if paragraph.startswith('Ответ')]
+    comment_list = [' '.join(paragraph.split('\n')[1:]) for paragraph in paragraphs if paragraph.startswith('Комментарий')]
     questions = dict(zip(question_list, answer_list))
+
+    return questions
+
+def get_paragraph_content(paragraph):
+
+    content = ' '.join(paragraph.split('\n')[1:])
+
+    return content
+
+def load_questions():
+    file_path = r'C:\Python projects\dvmn\quiz\quiz-questions\aaron16.txt'
+    with open(file_path, 'r', encoding='KOI8-R') as questions_file:
+        file_contents = questions_file.read()
+
+    paragraphs = file_contents.split('\n\n')
+
+    questions = {}
+
+    answer_fields = {'answer': 'Ответ', 'comment': 'Комментарий'}
+    fields = answer_fields.keys()
+    question = ''
+    for paragraph in paragraphs:
+        if paragraph.startswith('Вопрос'):
+            question = get_paragraph_content(paragraph)
+            questions[question] = dict.fromkeys(fields, '')
+        if question:
+            for field, first_word in answer_fields.items():
+                if paragraph.startswith(first_word):
+                    questions[question][field] = get_paragraph_content(paragraph)
+
 
     return questions
 
