@@ -2,13 +2,15 @@ import logging
 import os
 from dotenv import load_dotenv
 from telegram import Update, ForceReply, ReplyKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler
 from functools import partial
 from load_questions import load_questions
 import random
 import redis
 
 logger = logging.getLogger(__name__)
+
+CHOICE, ANSWER = range(2)
 
 
 def echo(update: Update, context: CallbackContext) -> None:
@@ -28,15 +30,22 @@ def check_answer(update: Update, context: CallbackContext, questions, redis_db) 
         else:
             reply_text = 'Правильно'
         custom_keyboard = [['Новый вопрос',]]
+        state = CHOICE
+
     else:
         reply_text = 'Не правильно'
         custom_keyboard = [['Сдаться',]]
+        state = ANSWER
 
     reply_markup = ReplyKeyboardMarkup(custom_keyboard)
     update.message.reply_text(reply_text, reply_markup=reply_markup)
 
+    return state
 
-def start(update: Update, context: CallbackContext) -> None:
+
+
+"""def start(update: Update, context: CallbackContext) -> None:"""
+def start(update: Update, context: CallbackContext):
     """Send a message when the command /start is issued."""
     '''user = update.effective_user
     update.message.reply_markdown_v2(
@@ -48,7 +57,11 @@ def start(update: Update, context: CallbackContext) -> None:
     reply_markup = ReplyKeyboardMarkup(custom_keyboard)
     update.message.reply_text('Здравствуйте!', reply_markup=reply_markup)
 
-def new_question(update: Update, context: CallbackContext, questions, redis_db) -> None:
+    return CHOICE
+
+"""def new_question(update: Update, context: CallbackContext, questions, redis_db) -> None:"""
+def new_question(update: Update, context: CallbackContext, questions, redis_db):
+
     """Send a new question when 'Новый вопрос' is issued."""
     #question, answer = random.choice(questions)
     question = random.choice(questions)
@@ -62,6 +75,18 @@ def new_question(update: Update, context: CallbackContext, questions, redis_db) 
 
     #print(f'2. {redis_db.get(update.effective_user.id)}')
     #print(redis_db.get('бубу'))
+
+    return ANSWER
+
+
+"""def end_game(update: Update, context: CallbackContext) -> None:"""
+def end_game(update: Update, context: CallbackContext):
+
+    """End the game."""
+
+    update.message.reply_text("Игра окончена")
+
+    return ConversationHandler.END
 
 def main() -> None:
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -80,14 +105,39 @@ def main() -> None:
 
     dispatcher = updater.dispatcher
 
-    dispatcher.add_handler(CommandHandler("start", start))
+    """dispatcher.add_handler(CommandHandler("start", start))
 
     new_question_handler = partial(new_question, questions=question_list, redis_db=redis_db)
     dispatcher.add_handler(MessageHandler(Filters.regex('^Новый вопрос$'), new_question_handler))
 
+    end_game_handler = partial(end_game)
+    dispatcher.add_handler(MessageHandler(Filters.regex('^Сдаться$'), end_game_handler))
+
     #dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
     check_answer_handler = partial(check_answer, questions=questions, redis_db=redis_db)
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, check_answer_handler))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, check_answer_handler))"""
+
+    new_question_handler = partial(new_question, questions=question_list, redis_db=redis_db)
+
+    end_game_handler = partial(end_game)
+
+    check_answer_handler = partial(check_answer, questions=questions, redis_db=redis_db)
+
+
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler('start', start)],
+
+        states={
+            CHOICE: [MessageHandler(Filters.regex('^Новый вопрос$'), new_question_handler)],
+
+            ANSWER: [MessageHandler(Filters.regex('^Сдаться$'), end_game_handler),
+                     MessageHandler(Filters.text & ~Filters.command, check_answer_handler)]
+        },
+
+        fallbacks=[MessageHandler(Filters.regex('^Сдаться$'), end_game_handler)]
+    )
+
+    dispatcher.add_handler(conv_handler)
 
     updater.start_polling()
 
