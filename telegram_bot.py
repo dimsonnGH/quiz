@@ -88,6 +88,20 @@ def end_game(update: Update, context: CallbackContext):
 
     return ConversationHandler.END
 
+def skip_question(update: Update, context: CallbackContext, questions, question_list, redis_db):
+
+    """Skip a question."""
+
+    question = redis_db.get(update.effective_user.id)
+    question_details = questions[question]
+
+    reply_text = f'{question_details["comment"]}'
+    update.message.reply_text(reply_text)
+
+    state = new_question(update, context, question_list, redis_db)
+
+    return state
+
 def main() -> None:
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -119,7 +133,7 @@ def main() -> None:
 
     new_question_handler = partial(new_question, questions=question_list, redis_db=redis_db)
 
-    end_game_handler = partial(end_game)
+    skip_question_handler = partial(skip_question, questions=questions, question_list=question_list, redis_db=redis_db)
 
     check_answer_handler = partial(check_answer, questions=questions, redis_db=redis_db)
 
@@ -130,11 +144,11 @@ def main() -> None:
         states={
             CHOICE: [MessageHandler(Filters.regex('^Новый вопрос$'), new_question_handler)],
 
-            ANSWER: [MessageHandler(Filters.regex('^Сдаться$'), end_game_handler),
+            ANSWER: [MessageHandler(Filters.regex('^Сдаться$'), skip_question_handler),
                      MessageHandler(Filters.text & ~Filters.command, check_answer_handler)]
         },
 
-        fallbacks=[MessageHandler(Filters.regex('^Сдаться$'), end_game_handler)]
+        fallbacks=[] #[MessageHandler(Filters.regex('^Сдаться$'), end_game_handler)]
     )
 
     dispatcher.add_handler(conv_handler)
