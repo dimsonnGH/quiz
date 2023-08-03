@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from telegram import Update, ForceReply, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler
 from functools import partial
-from load_questions import load_questions
+from utils import load_questions
 import random
 import redis
 
@@ -17,7 +17,7 @@ def echo(update: Update, context: CallbackContext) -> None:
     """Echo the user message."""
     update.message.reply_text(update.message.text)
 
-def check_answer(update: Update, context: CallbackContext, questions, redis_db) -> None:
+def check_answer(update: Update, context: CallbackContext, questions, redis_db):
     """"""
     user_answer = update.message.text.lower()
     question = redis_db.get(update.effective_user.id)
@@ -63,18 +63,12 @@ def start(update: Update, context: CallbackContext):
 def new_question(update: Update, context: CallbackContext, questions, redis_db):
 
     """Send a new question when 'Новый вопрос' is issued."""
-    #question, answer = random.choice(questions)
-    question = random.choice(questions)
-    update.message.reply_text(question)
 
-    #print(f'1. {redis_db.get(update.effective_user.id)}')
+    question = random.choice(questions)
 
     redis_db.set(update.effective_user.id, question)
-    #redis_db.set(update.effective_user.id, 'гыгы')
-    #redis_db.set('бубу', 'гыгы')
 
-    #print(f'2. {redis_db.get(update.effective_user.id)}')
-    #print(redis_db.get('бубу'))
+    update.message.reply_text(question)
 
     return ANSWER
 

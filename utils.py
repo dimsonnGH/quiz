@@ -71,6 +71,22 @@ def load_questions():
 
     return questions
 
+def check_answer(user_answer, user_id, questions, redis_db):
+    """"""
+    norm_user_answer = user_answer.lower()
+    question = redis_db.get(user_id)
+    question_details = questions[question]
+    correct_answer = question_details['answer'].lower()
+
+    comment = ""
+    if norm_user_answer in correct_answer:
+        result = True
+        if question_details["comment"]:
+            comment = question_details["comment"]
+    else:
+        result = False
+
+    return (result, comment)
 
 """if __name__ == '__main__':
     main()
