@@ -10,6 +10,7 @@ import utils
 
 import redis
 
+
 def get_keyboard():
     keyboard = VkKeyboard(one_time=True)
     keyboard.add_button('Новый вопрос')
@@ -20,23 +21,26 @@ def get_keyboard():
 
     return keyboard
 
+
 def get_answer_keyboard():
     keyboard = VkKeyboard(one_time=True)
     keyboard.add_button('Сдаться', color=VkKeyboardColor.NEGATIVE)
 
     return keyboard
-def echo(event, vk_api):
 
+
+def echo(event, vk_api):
     keyboard = get_keyboard()
 
     vk_api.messages.send(
         user_id=event.user_id,
         message="ответ: " + event.text,
-        random_id=random.randint(1,1000),
-        keyboard = keyboard.get_keyboard()
+        random_id=random.randint(1, 1000),
+        keyboard=keyboard.get_keyboard()
     )
-def send_new_question(event, vk_api, questions, redis_db):
 
+
+def send_new_question(event, vk_api, questions, redis_db):
     """Send a new question when 'Новый вопрос' is issued."""
 
     question = random.choice(questions)
@@ -50,9 +54,10 @@ def send_new_question(event, vk_api, questions, redis_db):
     vk_api.messages.send(
         user_id=user_id,
         message=question,
-        random_id=random.randint(1,1000),
-        keyboard = keyboard.get_keyboard()
+        random_id=random.randint(1, 1000),
+        keyboard=keyboard.get_keyboard()
     )
+
 
 def check_answer(event, vk_api, questions, redis_db):
     """"""
@@ -74,17 +79,28 @@ def check_answer(event, vk_api, questions, redis_db):
     vk_api.messages.send(
         user_id=user_id,
         message=reply_text,
-        random_id=random.randint(1,1000),
-        keyboard = keyboard.get_keyboard()
+        random_id=random.randint(1, 1000),
+        keyboard=keyboard.get_keyboard()
     )
 
-def skip_question(event, vk_api, questions, redis_db):
 
+def skip_question(event, vk_api, questions, redis_db):
     """Skip a question."""
     user_id = event.user_id
 
     question = redis_db.get(user_id)
+
+    if not question:
+        return
+
     question_details = questions[question]
+
+    reply_text = question_details["answer"]
+    vk_api.messages.send(
+        user_id=user_id,
+        message=reply_text,
+        random_id=random.randint(1, 1000)
+    )
 
     reply_text = f'{question_details["comment"]}'
     keyboard = get_keyboard()
@@ -92,8 +108,8 @@ def skip_question(event, vk_api, questions, redis_db):
     vk_api.messages.send(
         user_id=user_id,
         message=reply_text,
-        random_id=random.randint(1,1000),
-        keyboard = keyboard.get_keyboard()
+        random_id=random.randint(1, 1000),
+        keyboard=keyboard.get_keyboard()
     )
 
 
@@ -106,23 +122,16 @@ if __name__ == "__main__":
     vk_session = vk.VkApi(token=vk_api_key)
     vk_api = vk_session.get_api()
 
-    redis_db = redis.Redis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), db=1, charset='utf-8', decode_responses=True)
+    redis_db = redis.Redis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), db=1, charset='utf-8',
+                           decode_responses=True)
 
     questions = utils.load_questions()
     question_list = list(questions)
 
-    '''vk.messages.send(
-        peer_id=123456,
-        random_id=get_random_id(),
-        keyboard=keyboard.get_keyboard(),
-        message='Пример клавиатуры'
-    )'''
-
-
     longpoll = VkLongPoll(vk_session)
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-            #echo(event, vk_api)
+            # echo(event, vk_api)
             if event.text == "Новый вопрос":
                 send_new_question(event, vk_api, question_list, redis_db)
             elif event.text == "Сдаться":
