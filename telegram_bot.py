@@ -120,6 +120,7 @@ def main() -> None:
     questions_folder_name = os.getenv("QUESTIONS_FOLDER_NAME", "questions")
     questions = utils.load_questions(questions_folder_name)
     question_list = list(questions)
+    logger.info('questions are loaded')
 
     updater = Updater(telegram_token, use_context=True)
 
