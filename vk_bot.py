@@ -125,13 +125,13 @@ if __name__ == "__main__":
     redis_db = redis.Redis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), db=1, charset='utf-8',
                            decode_responses=True)
 
-    questions = utils.load_questions()
+    questions_folder_name = os.getenv("QUESTIONS_FOLDER_NAME", "questions")
+    questions = utils.load_questions(questions_folder_name)
     question_list = list(questions)
 
     longpoll = VkLongPoll(vk_session)
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-            # echo(event, vk_api)
             if event.text == "Новый вопрос":
                 send_new_question(event, vk_api, question_list, redis_db)
             elif event.text == "Сдаться":

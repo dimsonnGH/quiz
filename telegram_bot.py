@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler
 from functools import partial
-from utils import load_questions, check_answer as utils_check_answer
+import utils
 import random
 import redis
 
@@ -14,11 +14,9 @@ CHOICE, ANSWER = range(2)
 
 
 def check_answer(update: Update, context: CallbackContext, questions, redis_db):
-    """"""
-
     user_answer = update.message.text
     user_id = update.effective_user.id
-    is_correct, comment = utils_check_answer(user_answer, user_id, questions, redis_db)
+    is_correct, comment = utils.check_answer(user_answer, user_id, questions, redis_db)
 
     if is_correct:
         if comment:
@@ -65,6 +63,16 @@ def new_question(update: Update, context: CallbackContext, questions, redis_db):
     return ANSWER
 
 
+def other_choice(update: Update, context: CallbackContext):
+    """Return CHOICE state when 'Новый вопрос' isn't issued."""
+
+    custom_keyboard = [['Новый вопрос', ]]
+    reply_markup = ReplyKeyboardMarkup(custom_keyboard)
+    update.message.reply_text('Продолжим?', reply_markup=reply_markup)
+
+    return CHOICE
+
+
 def end_game(update: Update, context: CallbackContext):
     """End the game."""
 
@@ -91,7 +99,8 @@ def skip_question(update: Update, context: CallbackContext, questions, question_
     reply_markup = ReplyKeyboardMarkup(custom_keyboard)
 
     reply_text = question_details["comment"]
-    update.message.reply_text(reply_text, reply_markup=reply_markup)
+    if reply_text:
+        update.message.reply_text(reply_text, reply_markup=reply_markup)
 
     redis_db.delete(update.effective_user.id)
 
@@ -108,7 +117,8 @@ def main() -> None:
     redis_db = redis.Redis(host=os.getenv('REDIS_HOST'), port=os.getenv('REDIS_PORT'), db=1, charset='utf-8',
                            decode_responses=True)
 
-    questions = load_questions()
+    questions_folder_name = os.getenv("QUESTIONS_FOLDER_NAME", "questions")
+    questions = utils.load_questions(questions_folder_name)
     question_list = list(questions)
 
     updater = Updater(telegram_token, use_context=True)
@@ -125,10 +135,13 @@ def main() -> None:
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOICE: [MessageHandler(Filters.regex('^Новый вопрос$'), new_question_handler)],
+            CHOICE: [MessageHandler(Filters.regex('^Новый вопрос$'), new_question_handler),
+                     MessageHandler(Filters.text, other_choice)
+                     ],
 
             ANSWER: [MessageHandler(Filters.regex('^Сдаться$'), skip_question_handler),
-                     MessageHandler(Filters.text & ~Filters.command, check_answer_handler)]
+                     MessageHandler(Filters.text & ~Filters.command, check_answer_handler)
+                     ]
         },
 
         fallbacks=[MessageHandler(Filters.regex('^Сдаться$'), skip_question_handler)]
