@@ -132,9 +132,10 @@ if __name__ == "__main__":
     longpoll = VkLongPoll(vk_session)
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-            if event.text == "Новый вопрос":
+            lower_text = event.text.lower()
+            if lower_text == "новый вопрос":
                 send_new_question(event, vk_api, question_list, redis_db)
-            elif event.text == "Сдаться":
+            elif lower_text == "сдаться":
                 skip_question(event, vk_api, questions, redis_db)
             else:
                 check_answer(event, vk_api, questions, redis_db)

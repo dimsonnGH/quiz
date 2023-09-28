@@ -136,16 +136,16 @@ def main() -> None:
         entry_points=[CommandHandler('start', start)],
 
         states={
-            CHOICE: [MessageHandler(Filters.regex('^Новый вопрос$'), new_question_handler),
+            CHOICE: [MessageHandler(Filters.regex('^[Нн]овый вопрос$'), new_question_handler),
                      MessageHandler(Filters.text, other_choice)
                      ],
 
-            ANSWER: [MessageHandler(Filters.regex('^Сдаться$'), skip_question_handler),
+            ANSWER: [MessageHandler(Filters.regex('^[Сс]даться$'), skip_question_handler),
                      MessageHandler(Filters.text & ~Filters.command, check_answer_handler)
                      ]
         },
 
-        fallbacks=[MessageHandler(Filters.regex('^Сдаться$'), skip_question_handler)]
+        fallbacks=[MessageHandler(Filters.regex('^[Сс]даться$'), skip_question_handler)]
     )
 
     dispatcher.add_handler(conv_handler)
