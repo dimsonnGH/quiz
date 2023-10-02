@@ -1,7 +1,7 @@
 import logging
 import os
 from dotenv import load_dotenv
-from telegram import Update, ReplyKeyboardMarkup
+from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler
 from functools import partial
 import utils
@@ -76,7 +76,8 @@ def other_choice(update: Update, context: CallbackContext):
 def end_game(update: Update, context: CallbackContext):
     """End the game."""
 
-    update.message.reply_text("Игра окончена")
+    reply_markup = ReplyKeyboardRemove()
+    update.message.reply_text("Игра окончена", reply_markup=reply_markup)
 
     return ConversationHandler.END
 
@@ -137,6 +138,7 @@ def main() -> None:
 
         states={
             CHOICE: [MessageHandler(Filters.regex('^[Нн]овый вопрос$'), new_question_handler),
+                     MessageHandler(Filters.regex('^[Сс]даться$'), end_game),
                      MessageHandler(Filters.text, other_choice)
                      ],
 
