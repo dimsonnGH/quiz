@@ -96,21 +96,30 @@ def skip_question(event, vk_api, questions, redis_db):
     question_details = questions[question]
 
     reply_text = question_details["answer"]
-    vk_api.messages.send(
-        user_id=user_id,
-        message=reply_text,
-        random_id=random.randint(1, 1000)
-    )
+    if question_details["comment"]:
+        vk_api.messages.send(
+            user_id=user_id,
+            message=reply_text,
+            random_id=random.randint(1, 1000)
+        )
 
-    reply_text = f'{question_details["comment"]}'
-    keyboard = get_keyboard()
+        reply_text = f'{question_details["comment"]}'
+        keyboard = get_keyboard()
 
-    vk_api.messages.send(
-        user_id=user_id,
-        message=reply_text,
-        random_id=random.randint(1, 1000),
-        keyboard=keyboard.get_keyboard()
-    )
+        vk_api.messages.send(
+            user_id=user_id,
+            message=reply_text,
+            random_id=random.randint(1, 1000),
+            keyboard=keyboard.get_keyboard()
+        )
+    else:
+        keyboard = get_keyboard()
+        vk_api.messages.send(
+            user_id=user_id,
+            message=reply_text,
+            random_id=random.randint(1, 1000),
+            keyboard=keyboard.get_keyboard()
+        )
 
 
 if __name__ == "__main__":
