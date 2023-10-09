@@ -6,7 +6,7 @@ import vk_api as vk
 from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
-import utils
+import questions_utils
 
 import redis
 
@@ -64,7 +64,7 @@ def check_answer(event, vk_api, questions, redis_db):
     user_answer = event.text
     user_id = event.user_id
 
-    is_correct, comment = utils.check_answer(user_answer, event.user_id, questions, redis_db)
+    is_correct, comment = questions_utils.check_answer(user_answer, event.user_id, questions, redis_db)
 
     if is_correct:
         if comment:

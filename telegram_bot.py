@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler
 from functools import partial
-import utils
+import questions_utils
 import random
 import redis
 
@@ -16,7 +16,7 @@ CHOICE, ANSWER = range(2)
 def check_answer(update: Update, context: CallbackContext, questions, redis_db):
     user_answer = update.message.text
     user_id = update.effective_user.id
-    is_correct, comment = utils.check_answer(user_answer, user_id, questions, redis_db)
+    is_correct, comment = questions_utils.check_answer(user_answer, user_id, questions, redis_db)
 
     if is_correct:
         if comment:
