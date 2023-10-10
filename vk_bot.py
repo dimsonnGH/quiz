@@ -135,7 +135,7 @@ if __name__ == "__main__":
                            decode_responses=True)
 
     questions_folder_name = os.getenv("QUESTIONS_FOLDER_NAME", "questions")
-    questions = utils.load_questions(questions_folder_name)
+    questions = questions_utils.load_questions(questions_folder_name)
     question_list = list(questions)
 
     longpoll = VkLongPoll(vk_session)
