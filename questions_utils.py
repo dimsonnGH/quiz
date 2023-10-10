@@ -33,29 +33,12 @@ def load_questions(folder_name):
     return questions
 
 
-def old_check_answer(user_answer, user_id, questions, redis_db):
-    """"""
-    norm_user_answer = user_answer.lower()
-    question = redis_db.get(user_id)
-    question_details = questions[question]
-    correct_answer = question_details['answer'].lower()
-
-    comment = ""
-    if norm_user_answer in correct_answer:
-        result = True
-        if question_details["comment"]:
-            comment = question_details["comment"]
-    else:
-        result = False
-
-    return (result, comment)
-
-
 def check_answer(user_answer, question_details):
     norm_user_answer = user_answer.lower()
     correct_answer = question_details['lowercase_answer']
 
     return norm_user_answer in correct_answer
+
 
 def get_question_details(user_id, questions, redis_db):
     question = redis_db.get(user_id)

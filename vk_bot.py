@@ -49,7 +49,6 @@ def send_new_question(event, vk_api, questions, redis_db):
 
 
 def check_answer(event, vk_api, questions, redis_db):
-    """"""
     user_answer = event.text
     user_id = event.user_id
 
