@@ -136,14 +136,14 @@ if __name__ == "__main__":
 
     questions_folder_name = os.getenv("QUESTIONS_FOLDER_NAME", "questions")
     questions = questions_utils.load_questions(questions_folder_name)
-    question_list = list(questions)
+    question_keys = list(questions)
 
     longpoll = VkLongPoll(vk_session)
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
             lower_text = event.text.lower()
             if lower_text == "новый вопрос":
-                send_new_question(event, vk_api, question_list, redis_db)
+                send_new_question(event, vk_api, question_keys, redis_db)
             elif lower_text == "сдаться":
                 skip_question(event, vk_api, questions, redis_db)
             else:

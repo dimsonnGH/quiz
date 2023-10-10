@@ -120,16 +120,16 @@ def main() -> None:
 
     questions_folder_name = os.getenv("QUESTIONS_FOLDER_NAME", "questions")
     questions = questions_utils.load_questions(questions_folder_name)
-    question_list = list(questions)
+    question_keys = list(questions)
     logger.info('questions are loaded')
 
     updater = Updater(telegram_token, use_context=True)
 
     dispatcher = updater.dispatcher
 
-    new_question_handler = partial(new_question, questions=question_list, redis_db=redis_db)
+    new_question_handler = partial(new_question, questions=question_keys, redis_db=redis_db)
 
-    skip_question_handler = partial(skip_question, questions=questions, question_list=question_list, redis_db=redis_db)
+    skip_question_handler = partial(skip_question, questions=questions, question_list=question_keys, redis_db=redis_db)
 
     check_answer_handler = partial(check_answer, questions=questions, redis_db=redis_db)
 
