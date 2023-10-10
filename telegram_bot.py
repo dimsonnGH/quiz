@@ -13,10 +13,12 @@ logger = logging.getLogger(__name__)
 CHOICE, ANSWER = range(2)
 
 
-def check_answer(update: Update, context: CallbackContext, questions, redis_db):
+def reply_to_attempt(update: Update, context: CallbackContext, questions, redis_db):
     user_answer = update.message.text
     user_id = update.effective_user.id
-    is_correct, comment = questions_utils.check_answer(user_answer, user_id, questions, redis_db)
+    question_details = questions_utils.get_question_details(user_id, questions, redis_db)
+    comment = question_details['comment']
+    is_correct = questions_utils.check_answer(user_answer, question_details)
 
     if is_correct:
         if comment:
@@ -131,7 +133,7 @@ def main() -> None:
 
     skip_question_handler = partial(skip_question, questions=questions, question_list=question_keys, redis_db=redis_db)
 
-    check_answer_handler = partial(check_answer, questions=questions, redis_db=redis_db)
+    reply_to_attempt_handler = partial(reply_to_attempt, questions=questions, redis_db=redis_db)
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
@@ -143,7 +145,7 @@ def main() -> None:
                      ],
 
             ANSWER: [MessageHandler(Filters.regex('^[Сс]даться$'), skip_question_handler),
-                     MessageHandler(Filters.text & ~Filters.command, check_answer_handler)
+                     MessageHandler(Filters.text & ~Filters.command, reply_to_attempt_handler)
                      ]
         },
 

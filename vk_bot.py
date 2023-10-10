@@ -53,7 +53,9 @@ def check_answer(event, vk_api, questions, redis_db):
     user_answer = event.text
     user_id = event.user_id
 
-    is_correct, comment = questions_utils.check_answer(user_answer, event.user_id, questions, redis_db)
+    question_details = questions_utils.get_question_details(user_id, questions, redis_db)
+    comment = question_details['comment']
+    is_correct = questions_utils.check_answer(user_answer, question_details)
 
     if is_correct:
         if comment:
