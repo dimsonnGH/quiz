@@ -29,17 +29,6 @@ def get_answer_keyboard():
     return keyboard
 
 
-def echo(event, vk_api):
-    keyboard = get_keyboard()
-
-    vk_api.messages.send(
-        user_id=event.user_id,
-        message="ответ: " + event.text,
-        random_id=random.randint(1, 1000),
-        keyboard=keyboard.get_keyboard()
-    )
-
-
 def send_new_question(event, vk_api, questions, redis_db):
     """Send a new question when 'Новый вопрос' is issued."""
 
